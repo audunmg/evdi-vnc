@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <regex.h>
 
@@ -49,9 +50,9 @@ rfbScreenInfoPtr screen;
 
 evdi_handle evdiNode;
 bool bufferAllocated = false;
-evdi_buffer buffer;
-evdi_mode currentMode;
-evdi_rect rects[MAX_RECTS];
+struct evdi_buffer buffer;
+struct evdi_mode currentMode;
+struct evdi_rect rects[MAX_RECTS];
 
 // *** Signal Handler ***
 void handleSignal(int signal) {
@@ -129,7 +130,7 @@ void dpmsHandler(int dpmsMode, void *userData) {
   fprintf(stdout, "TODO: Handle DPMS mode changes\n");
 }
 
-void modeChangedHandler(evdi_mode mode, void *userData) {
+void modeChangedHandler(struct evdi_mode mode, void *userData) {
   fprintf(stdout, "Mode changed to %dx%d @ %dHz\n", mode.width, mode.height, mode.refresh_rate);
   if (mode.bits_per_pixel != 32) {
     // TODO: properly communicate between Linux DRM buffer formats and
@@ -208,7 +209,7 @@ int countCardEntries() {
  * Return the index of the first available device or -1 if none is found.
  */
 int findAvailableEvdiNode() {
-  evdi_device_status status = UNRECOGNIZED;
+  enum evdi_device_status status = UNRECOGNIZED;
   int i;
   int nCards = countCardEntries();
   for (i = 0; i < nCards; i++) {
@@ -253,7 +254,7 @@ evdi_handle openEvdiNode() {
  */
 void connectToEvdiNode(evdi_handle nodeHandle) {
   fprintf(stdout, "Sent EDID of size: %lu\t%s\n", sizeof(EDID), EDID);
-  evdi_connect(nodeHandle, EDID, sizeof(EDID));
+  evdi_connect(nodeHandle, EDID, sizeof(EDID), 1920*1080);
   fprintf(stdout, "Connected to EVDI node.\n");
 }
 
@@ -276,7 +277,7 @@ int main(int argc, char *argv[]) {
   struct pollfd pollfds[1];
   pollfds[0].fd = evdiFd;
   pollfds[0].events = POLLIN;
-  evdi_event_context evdiCtx;
+  struct evdi_event_context evdiCtx;
   evdiCtx.dpms_handler = dpmsHandler;
   evdiCtx.mode_changed_handler = modeChangedHandler;
   evdiCtx.update_ready_handler = updateReadyHandler;
