@@ -314,10 +314,10 @@ int main(int argc, char *argv[]) {
       updateReadyHandler(buffer.id, NULL);
     }
     // Poll for EVDI updates for 1.0ms
-    if (poll(pollfds, 1, 1)) {
+    //if (poll(pollfds, 1, 1)) {
       // Figure out which update we received
       evdi_handle_events(evdiNode, &evdiCtx);
-    }
+    //}
     // Check for VNC events for remaining time to match refresh rate
     int timeoutMicros = (1e6 / currentMode.refresh_rate) - 1000;
     rfbProcessEvents(screen, timeoutMicros);
